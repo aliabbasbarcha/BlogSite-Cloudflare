@@ -1,6 +1,6 @@
 # BlogSite
 
-A blog built with [Next.js](https://nextjs.org) (App Router), [Tailwind CSS](https://tailwindcss.com), and [Sanity](https://www.sanity.io) as the content backend. Content is managed through an embedded Sanity Studio at `/studio` — no separate admin app to run.
+A blog built with [Next.js](https://nextjs.org) (App Router), [Tailwind CSS](https://tailwindcss.com), and [Sanity](https://www.sanity.io) as the content backend. Content is managed through Sanity Studio, hosted separately (free) on `sanity.studio` — see [Studio](#studio) below.
 
 This codebase is designed to be deployed multiple times (one deployment per domain) against the **same** Sanity project/dataset, with each deployment showing only the posts authored for it — see [Multi-site setup](#multi-site-setup).
 
@@ -9,14 +9,14 @@ This codebase is designed to be deployed multiple times (one deployment per doma
 - Dark theme with an animated 3-color "aurora" gradient background (pure CSS, respects `prefers-reduced-motion`)
 - Home page with a hero section, a compact "latest posts" grid, and a "Free Trading Calculators" section linking out to candlestickshub.com
 - `/blog` — full post index, paginated 6 posts per page (GROQ slicing + count, so it never loads the whole collection at once)
-- Sanity Studio embedded at `/studio` for writing and editing posts
+- Sanity Studio, hosted separately for free on `sanity.studio`, for writing and editing posts (see [Studio](#studio))
 - Multi-site content scoping — one Sanity project/dataset can back several domains (see [Multi-site setup](#multi-site-setup))
 - Per-post SEO fields (meta title/description) with sensible fallbacks, self-referencing canonical URLs on every page, JSON-LD structured data (`WebSite` + `BlogPosting`), `sitemap.xml`, `robots.txt`, and `llms.txt`
 - Social share buttons (X, LinkedIn, Facebook, WhatsApp, copy-link) on every post
 - A no-login comment system on each post (name + comment, no account required)
 - On-demand revalidation via a Sanity webhook — edits in the Studio update the live site within seconds, with a 1-week time-based fallback
 - Loading skeletons and an error boundary for the post and blog-index routes
-- Security headers (`Content-Security-Policy`, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`) applied to every route except `/studio`
+- Security headers (`Content-Security-Policy`, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`) applied to every route
 - Custom SVG favicon and logo
 - [Vercel Speed Insights](https://vercel.com/docs/speed-insights)
 - Link prefetching is disabled site-wide to conserve request usage on free hosting plans
@@ -48,7 +48,8 @@ This codebase is designed to be deployed multiple times (one deployment per doma
    | `NEXT_PUBLIC_SITE_URL` | Public URL of the site (used in the sitemap, robots.txt, and SEO tags). Use `http://localhost:3000` locally |
    | `NEXT_PUBLIC_SITE_ID` | Which `site` document's posts this deployment shows — must match a `siteId` value in the Studio (see [Multi-site setup](#multi-site-setup)) |
    | `SANITY_API_READ_TOKEN` | A Sanity API token with **Editor** permissions, used server-side to save and read comments. Not needed for writing posts in the Studio — that just needs you to be logged into your Sanity account in the browser. Create one at `sanity.io/manage` → your project → API → Tokens |
-   | `SANITY_REVALIDATE_SECRET` | A random secret shared with the Sanity webhook (see [On-demand revalidation](#on-demand-revalidation) below). Generate one with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
+   | `SANITY_REVALIDATE_SECRET` | A random secret shared with the Sanity webhook (see [On-demand revalidation](#on-demand-revalidation) below). Generate one with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`. Leave unset on a deployment that has no webhook slot (see below). |
+   | `NEXT_PUBLIC_STUDIO_URL` | URL of the deployed Studio (see [Studio](#studio) below) — linked to from the homepage's empty state. |
 
    If you don't have a Sanity project yet, run `npx sanity@latest init` in this folder and follow the prompts — it will create one and fill in the project ID/dataset for you.
 
@@ -58,8 +59,20 @@ This codebase is designed to be deployed multiple times (one deployment per doma
    npm run dev
    ```
 
-   - Site: [http://localhost:3000](http://localhost:3000)
-   - Studio (content editor): [http://localhost:3000/studio](http://localhost:3000/studio)
+   Site: [http://localhost:3000](http://localhost:3000). For the content editor, see [Studio](#studio) below.
+
+## Studio
+
+Sanity Studio is **not** part of this Next.js app — it's built from the same [`sanity.config.ts`](sanity.config.ts) and [schema](src/sanity/schemaTypes) but hosted separately, for free, on Sanity's own `*.sanity.studio` domain. It used to be embedded at `/studio`, but that bundled Studio's editor code (rich text, structure builder, etc.) into the Next.js server, which pushed the Cloudflare Worker well past the free-tier size limit — keeping it separate avoids that entirely.
+
+To deploy or update the Studio:
+
+```bash
+npx sanity login    # once, opens a browser to authenticate
+npx sanity deploy   # prompts for a studio hostname the first time, e.g. "blogsite" → blogsite.sanity.studio
+```
+
+Set `NEXT_PUBLIC_STUDIO_URL` to that URL in every deployment's env vars so the "no posts yet" empty state links to it.
 
 ## Content model
 
@@ -117,7 +130,6 @@ src/app/
   blog/[slug]/actions.ts      Server action that saves a new comment
   blog/[slug]/CommentForm.tsx Comment form (client component)
   api/revalidate/route.ts     Sanity webhook handler (on-demand revalidation)
-  studio/[[...tool]]/         Embedded Sanity Studio
   sitemap.ts, robots.ts       Generated SEO files
   llms.txt/route.ts           Generated llms.txt
   icon.svg                    Favicon
@@ -131,6 +143,8 @@ src/lib/site.ts                Site name/description/URL/site-ID constants, json
 next.config.ts                 Security headers (CSP etc.) and Sanity image remote pattern
 wrangler.jsonc                  Cloudflare Worker config (name, compatibility flags, assets)
 open-next.config.ts             OpenNext Cloudflare adapter build config
+sanity.config.ts                Studio config (schema, plugins) — deployed separately, see Studio
+sanity.cli.ts                   Studio CLI config (projectId/dataset for `npx sanity deploy`)
 ```
 
 ## Deployment

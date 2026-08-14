@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "blog-site",
+  "name": "blogsite-cloudflare",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-08-14",
   "compatibility_flags": ["nodejs_compat"],

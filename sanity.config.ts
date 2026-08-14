@@ -1,7 +1,8 @@
-'use client'
-
 /**
- * This configuration is used to for the Sanity Studio that’s mounted on the `\src\app\studio\[[...tool]]\page.tsx` route
+ * This configuration is for the standalone Sanity Studio hosted separately
+ * from the Next.js app (via `npx sanity deploy`, free on sanity.studio) —
+ * kept out of the Next.js app so its bundle doesn't count against the
+ * Cloudflare Worker's free-tier size limit.
  */
 
 import {visionTool} from '@sanity/vision'
@@ -14,7 +15,6 @@ import {schema} from './src/sanity/schemaTypes'
 import {structure} from './src/sanity/structure'
 
 export default defineConfig({
-  basePath: '/studio',
   projectId,
   dataset,
   // Add and edit the content schema in the './sanity/schemaTypes' folder

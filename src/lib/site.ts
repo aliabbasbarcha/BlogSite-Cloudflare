@@ -17,6 +17,10 @@ export const siteId = (() => {
 
 export const siteDescription = "A blog site for sharing knowledge and insights on various topics, including technology, programming, and personal experiences.";
 
+// Studio is hosted separately (via `npx sanity deploy`, free on sanity.studio)
+// rather than embedded in this app — see README's "Studio" section.
+export const studioUrl = process.env.NEXT_PUBLIC_STUDIO_URL || "https://www.sanity.io/manage";
+
 // Escapes "<" so a "</script>" inside CMS content can't break out of a
 // JSON-LD <script> tag when injected via dangerouslySetInnerHTML.
 export function jsonLd(data: unknown): string {

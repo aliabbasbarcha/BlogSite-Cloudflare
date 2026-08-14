@@ -4,7 +4,7 @@ import { client } from "@/sanity/lib/client";
 import { LATEST_POSTS_QUERY } from "@/sanity/lib/queries";
 import { PostCard, type PostCardData } from "@/components/PostCard";
 import { ToolCard, type ToolCardData } from "@/components/ToolCard";
-import { siteId } from "@/lib/site";
+import { siteId, studioUrl } from "@/lib/site";
 
 // No Sanity webhook configured for this deployment (free-tier webhook slots
 // are used by other sites) — revalidate frequently so new posts show up fast.
@@ -113,9 +113,9 @@ export default async function HomePage() {
         {posts.length === 0 ? (
           <p className="mt-6 text-gray-400">
             No posts yet. Add some in the{" "}
-            <Link href="/studio" prefetch={false} className="text-indigo-400 underline">
+            <a href={studioUrl} className="text-indigo-400 underline">
               Studio
-            </Link>
+            </a>
             .
           </p>
         ) : (
