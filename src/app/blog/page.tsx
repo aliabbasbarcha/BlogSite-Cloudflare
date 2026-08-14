@@ -6,8 +6,9 @@ import { PostCard, type PostCardData } from "@/components/PostCard";
 import { Pagination } from "@/components/Pagination";
 import { siteId } from "@/lib/site";
 
-// Fallback in case the Sanity webhook (see src/app/api/revalidate) doesn't fire.
-export const revalidate = 604800;
+// No Sanity webhook configured for this deployment (free-tier webhook slots
+// are used by other sites) — revalidate frequently so new posts show up fast.
+export const revalidate = 60;
 
 const PAGE_SIZE = 6;
 

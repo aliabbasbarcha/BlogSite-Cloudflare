@@ -82,7 +82,9 @@ One Sanity project/dataset can back several deployments (domains), each showing 
 
 ## On-demand revalidation
 
-Pages are cached for up to 1 week as a fallback, but a Sanity webhook triggers an immediate refresh whenever content changes:
+Two ways to keep pages fresh, and every deployment doesn't have to use the same one:
+
+**Webhook (instant, needs a free webhook slot)** — Sanity's free tier only allows 2 webhooks per project, and in a multi-site setup each deployment needs its own, so this only scales to 2 deployments unless you upgrade:
 
 1. In [sanity.io/manage](https://sanity.io/manage) → your project → **API** → **Webhooks** → **Create webhook**.
 2. **URL**: `https://<your-domain>/api/revalidate`
@@ -93,7 +95,14 @@ Pages are cached for up to 1 week as a fallback, but a Sanity webhook triggers a
 7. **Secret**: the same value as `SANITY_REVALIDATE_SECRET`
 8. Repeat for every deployment's domain (all pointing at the same dataset) — each one's handler ignores events for a different site.
 
-The handler lives at [`src/app/api/revalidate/route.ts`](src/app/api/revalidate/route.ts) — it verifies the request signature, then revalidates the home page, `/blog`, `sitemap.xml`, `llms.txt`, and (for posts) the specific post page.
+The handler lives at [`src/app/api/revalidate/route.ts`](src/app/api/revalidate/route.ts) — it verifies the request signature, then revalidates the home page, `/blog`, `sitemap.xml`, `llms.txt`, and (for posts) the specific post page. Leave `SANITY_REVALIDATE_SECRET` unset on a deployment that has no webhook — the route just responds 500 and is otherwise unused.
+
+**Time-based only (no webhook slot needed)** — used when a deployment doesn't have a free webhook slot. `export const revalidate` is set per route:
+
+- `/` and `/blog` — 60 seconds, so a newly published post shows up within about a minute without needing a webhook
+- `/blog/[slug]` and `/llms.txt` — 4 days, since a published post's content rarely changes after the fact
+
+New comments still show up immediately either way, via the `revalidatePath` call in [`src/app/blog/[slug]/actions.ts`](src/app/blog/%5Bslug%5D/actions.ts).
 
 ## Project structure
 
@@ -120,15 +129,30 @@ src/sanity/
   lib/                        Sanity clients (read + write) and GROQ queries
 src/lib/site.ts                Site name/description/URL/site-ID constants, jsonLd() helper
 next.config.ts                 Security headers (CSP etc.) and Sanity image remote pattern
+wrangler.jsonc                  Cloudflare Worker config (name, compatibility flags, assets)
+open-next.config.ts             OpenNext Cloudflare adapter build config
 ```
 
 ## Deployment
 
-Deploys cleanly to [Vercel](https://vercel.com/new) or [Netlify](https://netlify.com):
+### Cloudflare Workers
+
+Deploys via the [OpenNext Cloudflare adapter](https://opennext.js.org/cloudflare) (`@opennextjs/cloudflare` + `wrangler`, already in `devDependencies`):
+
+1. `npx wrangler login` — authenticate the CLI with your Cloudflare account.
+2. Set the same variables from `.env.local` as Worker secrets/vars (`NEXT_PUBLIC_*` ones are inlined at build time, so they must also be present in `.env.local`/CI when you build; `SANITY_API_READ_TOKEN` and `SANITY_REVALIDATE_SECRET` should additionally be set with `npx wrangler secret put <NAME>` so they're available at runtime), with `NEXT_PUBLIC_SITE_URL` set to your production domain and `NEXT_PUBLIC_SITE_ID` set per deployment (see [Multi-site setup](#multi-site-setup)).
+3. In your Sanity project's API settings, add your production URL to **CORS origins**.
+4. Decide per deployment whether it gets a [webhook or relies on time-based revalidation](#on-demand-revalidation) — free-tier Sanity projects only get 2 webhook slots.
+5. `npm run deploy` — runs `opennextjs-cloudflare build` then `opennextjs-cloudflare deploy`. Use `npm run preview` to build and run it locally against Workers runtime first.
+6. Worker config lives in [`wrangler.jsonc`](wrangler.jsonc) (name, compatibility flags, assets binding) and [`open-next.config.ts`](open-next.config.ts) (OpenNext build options).
+
+### Vercel or Netlify
+
+Also deploys cleanly to [Vercel](https://vercel.com/new) or [Netlify](https://netlify.com):
 
 1. Set the same environment variables from `.env.local` in the project settings, with `NEXT_PUBLIC_SITE_URL` set to your production domain and `NEXT_PUBLIC_SITE_ID` set per deployment (see [Multi-site setup](#multi-site-setup)).
 2. In your Sanity project's API settings, add your production URL to **CORS origins**.
-3. Set up the [on-demand revalidation webhook](#on-demand-revalidation) pointing at your production domain.
+3. Decide per deployment whether it gets a [webhook or relies on time-based revalidation](#on-demand-revalidation) — free-tier Sanity projects only get 2 webhook slots.
 4. On Vercel: enable **Speed Insights** for the project in the dashboard (Speed Insights tab) to start collecting data.
 5. On Netlify: the Next.js build can fail with "Secrets scanning found secrets in build" because `NEXT_PUBLIC_*` values are (correctly) inlined into the client bundle, and Netlify's scanner flags that by default. Fix by adding an env var listing every configured key:
    ```

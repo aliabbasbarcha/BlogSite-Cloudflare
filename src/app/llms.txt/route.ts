@@ -2,8 +2,10 @@ import { client } from "@/sanity/lib/client";
 import { POSTS_INDEX_QUERY } from "@/sanity/lib/queries";
 import { siteDescription, siteId, siteName, siteUrl } from "@/lib/site";
 
-// Fallback in case the Sanity webhook (see src/app/api/revalidate) doesn't fire.
-export const revalidate = 604800;
+// No Sanity webhook configured for this deployment (free-tier webhook slots
+// are used by other sites) — this file isn't user-facing, so a 4-day
+// revalidate window is fine.
+export const revalidate = 345600;
 
 type PostEntry = {
   title: string;

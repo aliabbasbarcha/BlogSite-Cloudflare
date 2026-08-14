@@ -12,9 +12,11 @@ import { jsonLd, siteId, siteName, siteUrl } from "@/lib/site";
 import { CommentForm } from "./CommentForm";
 import { ShareButtons } from "@/components/ShareButtons";
 
-// Fallback in case the Sanity webhook (see src/app/api/revalidate) doesn't fire.
-// New comments still show up immediately via the revalidatePath in ./actions.ts.
-export const revalidate = 604800;
+// No Sanity webhook configured for this deployment (free-tier webhook slots
+// are used by other sites) — published posts rarely change, so a 4-day
+// revalidate window is enough. New comments still show up immediately via
+// the revalidatePath in ./actions.ts.
+export const revalidate = 345600;
 
 type Comment = {
   _id: string;
