@@ -48,3 +48,7 @@ next-env.d.ts
 
 # claude code
 .claude/
+
+# sanity studio (local `sanity deploy` build output/cache)
+/dist
+/.sanity

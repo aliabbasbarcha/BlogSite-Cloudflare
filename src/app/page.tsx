@@ -71,16 +71,16 @@ export default async function HomePage() {
       <section className="border-b border-white/10">
         <div className="mx-auto max-w-3xl px-4 py-24 text-center">
           <p className="text-sm font-semibold uppercase tracking-wide text-indigo-400">
-            Welcome to BlogSite
+            BlogSite
           </p>
           <h1 className="mt-3 text-4xl font-bold tracking-tight text-white sm:text-5xl">
-            Words that inform.
+            Ideas worth reading.
             <br />
-            Stories that inspire.
+            Stories worth sharing.
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-gray-300">
-            A space for in-depth articles, practical guides, and honest
-            perspectives.
+            Long-form articles, hands-on guides, and perspectives you won&apos;t
+            find everywhere else.
           </p>
           <div className="mt-8 flex justify-center gap-4">
             <Link
@@ -97,7 +97,7 @@ export default async function HomePage() {
       <section className="mx-auto max-w-5xl px-4 py-16">
         <div className="flex items-baseline justify-between">
           <h2 className="text-2xl font-bold tracking-tight text-white">
-            Latest posts
+            Fresh from the blog
           </h2>
           {posts.length > 0 && (
             <Link
@@ -133,8 +133,8 @@ export default async function HomePage() {
             Free Trading Calculators
           </h2>
           <p className="mt-2 text-gray-400">
-            Risk, position size and prop firm tools — free, no signup, formulas
-            shown.
+            Handy calculators for risk, position sizing and prop-firm
+            rules — free to use, no signup, and every formula is shown.
           </p>
 
           <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
