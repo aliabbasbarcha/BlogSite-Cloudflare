@@ -130,7 +130,7 @@ src/app/
   blog/page.tsx               Paginated post index
   blog/loading.tsx             Loading skeleton for the index
   blog/error.tsx                Error boundary for /blog and /blog/[slug]
-  blog/[slug]/page.tsx        Post page (content, share buttons, comments)
+  blog/[slug]/page.tsx        Post page (content, share buttons, comments, "more from the blog")
   blog/[slug]/loading.tsx      Loading skeleton for a post
   blog/[slug]/actions.ts      Server action that saves a new comment
   blog/[slug]/CommentForm.tsx Comment form (client component)
@@ -144,9 +144,10 @@ src/components/
 src/sanity/
   schemaTypes/                Content model (post, author, category, comment, site)
   lib/                        Sanity clients (read + write) and GROQ queries
-src/lib/site.ts                Site name/description/URL/site-ID constants, jsonLd() helper
+src/lib/site.ts                Site name/description/URL/site-ID/Studio-URL constants, jsonLd() helper
+src/proxy.ts                    Per-IP rate limiting (see Cloudflare Workers deployment below)
 next.config.ts                 Security headers (CSP etc.) and Sanity image remote pattern
-wrangler.jsonc                  Cloudflare Worker config (name, compatibility flags, assets)
+wrangler.jsonc                  Cloudflare Worker config (name, compatibility flags, assets, rate limiter)
 open-next.config.ts             OpenNext Cloudflare adapter build config
 sanity.config.ts                Studio config (schema, plugins) — deployed separately, see Studio
 sanity.cli.ts                   Studio CLI config (projectId/dataset for `npx sanity deploy`)
@@ -177,7 +178,7 @@ Also deploys cleanly to [Vercel](https://vercel.com/new) or [Netlify](https://ne
 4. On Vercel: enable **Speed Insights** for the project in the dashboard (Speed Insights tab) to start collecting data.
 5. On Netlify: the Next.js build can fail with "Secrets scanning found secrets in build" because `NEXT_PUBLIC_*` values are (correctly) inlined into the client bundle, and Netlify's scanner flags that by default. Fix by adding an env var listing every configured key:
    ```
-   SECRETS_SCAN_OMIT_KEYS=NEXT_PUBLIC_SANITY_PROJECT_ID,NEXT_PUBLIC_SANITY_DATASET,NEXT_PUBLIC_SANITY_API_VERSION,NEXT_PUBLIC_SITE_ID,NEXT_PUBLIC_SITE_URL,SANITY_API_READ_TOKEN,SANITY_REVALIDATE_SECRET
+   SECRETS_SCAN_OMIT_KEYS=NEXT_PUBLIC_SANITY_PROJECT_ID,NEXT_PUBLIC_SANITY_DATASET,NEXT_PUBLIC_SANITY_API_VERSION,NEXT_PUBLIC_SITE_ID,NEXT_PUBLIC_SITE_URL,NEXT_PUBLIC_STUDIO_URL,NEXT_PUBLIC_SITE_DESCRIPTION,SANITY_API_READ_TOKEN,SANITY_REVALIDATE_SECRET
    ```
    (no spaces after the commas), then redeploy with cache cleared.
 
