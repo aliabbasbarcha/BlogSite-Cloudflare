@@ -66,6 +66,8 @@ This codebase is designed to be deployed multiple times (one deployment per doma
 
 Sanity Studio is **not** part of this Next.js app — it's built from the same [`sanity.config.ts`](sanity.config.ts) and [schema](src/sanity/schemaTypes) but hosted separately, for free, on Sanity's own `*.sanity.studio` domain. It used to be embedded at `/studio`, but that bundled Studio's editor code (rich text, structure builder, etc.) into the Next.js server, which pushed the Cloudflare Worker well past the free-tier size limit — keeping it separate avoids that entirely.
 
+`sanity.config.ts` reads `SANITY_STUDIO_PROJECT_ID` and `SANITY_STUDIO_DATASET` (not the `NEXT_PUBLIC_*` ones) — that `SANITY_STUDIO_` prefix is Sanity's own convention for variables its build tool inlines into the Studio's browser bundle; unlike Next.js, it doesn't inline `NEXT_PUBLIC_*` vars, so reusing those here silently ships a broken Studio (`Missing environment variable` at runtime). Set both in `.env.local` alongside the `NEXT_PUBLIC_SANITY_*` ones.
+
 To deploy or update the Studio:
 
 ```bash

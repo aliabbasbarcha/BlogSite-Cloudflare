@@ -9,10 +9,29 @@ import {visionTool} from '@sanity/vision'
 import {defineConfig} from 'sanity'
 import {structureTool} from 'sanity/structure'
 
-// Go to https://www.sanity.io/docs/api-versioning to learn how API versioning works
-import {apiVersion, dataset, projectId} from './src/sanity/env'
 import {schema} from './src/sanity/schemaTypes'
 import {structure} from './src/sanity/structure'
+
+// Sanity's own build tool (used by `sanity deploy`) only statically inlines
+// SANITY_STUDIO_*-prefixed env vars into the Studio's browser bundle — unlike
+// Next.js, it does not inline NEXT_PUBLIC_* vars, so this config can't reuse
+// ./src/sanity/env.ts (that one is for the Next.js app only).
+function assertValue<T>(v: T | undefined, errorMessage: string): T {
+  if (v === undefined) {
+    throw new Error(errorMessage)
+  }
+  return v
+}
+
+const apiVersion = process.env.SANITY_STUDIO_API_VERSION || '2026-08-10'
+const dataset = assertValue(
+  process.env.SANITY_STUDIO_DATASET,
+  'Missing environment variable: SANITY_STUDIO_DATASET'
+)
+const projectId = assertValue(
+  process.env.SANITY_STUDIO_PROJECT_ID,
+  'Missing environment variable: SANITY_STUDIO_PROJECT_ID'
+)
 
 export default defineConfig({
   projectId,
