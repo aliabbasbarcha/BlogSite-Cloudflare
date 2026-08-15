@@ -50,6 +50,7 @@ This codebase is designed to be deployed multiple times (one deployment per doma
    | `SANITY_API_READ_TOKEN` | A Sanity API token with **Editor** permissions, used server-side to save and read comments. Not needed for writing posts in the Studio — that just needs you to be logged into your Sanity account in the browser. Create one at `sanity.io/manage` → your project → API → Tokens |
    | `SANITY_REVALIDATE_SECRET` | A random secret shared with the Sanity webhook (see [On-demand revalidation](#on-demand-revalidation) below). Generate one with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`. Leave unset on a deployment that has no webhook slot (see below). |
    | `NEXT_PUBLIC_STUDIO_URL` | URL of the deployed Studio (see [Studio](#studio) below) — linked to from the homepage's empty state. |
+   | `NEXT_PUBLIC_SITE_DESCRIPTION` | Meta description / JSON-LD description for this deployment. Set a distinct value per deployment — sharing this codebase across multiple sites shouldn't mean sharing an identical meta description. Falls back to a generic default if unset. |
 
    If you don't have a Sanity project yet, run `npx sanity@latest init` in this folder and follow the prompts — it will create one and fill in the project ID/dataset for you.
 

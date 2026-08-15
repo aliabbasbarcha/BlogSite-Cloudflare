@@ -15,7 +15,11 @@ export const siteId = (() => {
   return value;
 })();
 
-export const siteDescription = "A blog site for sharing knowledge and insights on various topics, including technology, programming, and personal experiences.";
+// Configurable per deployment (see .env.local.example) so multiple sites
+// sharing this codebase don't all render an identical meta description.
+export const siteDescription =
+  process.env.NEXT_PUBLIC_SITE_DESCRIPTION ||
+  "A blog site for sharing knowledge and insights on various topics, including technology, programming, and personal experiences.";
 
 // Studio is hosted separately (via `npx sanity deploy`, free on sanity.studio)
 // rather than embedded in this app — see README's "Studio" section.
