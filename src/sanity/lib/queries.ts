@@ -44,6 +44,15 @@ export const POST_SLUGS_QUERY = defineQuery(`
   *[${SITE_POST_FILTER}][].slug.current
 `);
 
+// Titles + slugs only, for the "More from the blog" internal-linking box
+// under a post — no images, so it stays cheap regardless of list length.
+export const MORE_POSTS_QUERY = defineQuery(`
+  *[${SITE_POST_FILTER} && slug.current != $slug] | order(publishedAt desc) [0...$limit] {
+    title,
+    "slug": slug.current
+  }
+`);
+
 export const COMMENTS_QUERY = defineQuery(`
   *[_type == "comment" && post._ref == $postId] | order(_createdAt asc) {
     _id,

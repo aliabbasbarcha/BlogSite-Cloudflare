@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { PortableText, type PortableTextBlock, type PortableTextComponents } from "next-sanity";
 import Image from "next/image";
+import Link from "next/link";
 
 import { client } from "@/sanity/lib/client";
 import { urlFor } from "@/sanity/lib/image";
 import { writeClient } from "@/sanity/lib/writeClient";
-import { COMMENTS_QUERY, POST_QUERY, POST_SLUGS_QUERY } from "@/sanity/lib/queries";
+import { COMMENTS_QUERY, MORE_POSTS_QUERY, POST_QUERY, POST_SLUGS_QUERY } from "@/sanity/lib/queries";
 import { jsonLd, siteId, siteName, siteUrl } from "@/lib/site";
 
 import { CommentForm } from "./CommentForm";
@@ -24,6 +25,13 @@ type Comment = {
   text: string;
   _createdAt: string;
 };
+
+type MorePost = {
+  title: string;
+  slug: string;
+};
+
+const MORE_POSTS_LIMIT = 12;
 
 type SanityImage = import("sanity").Image & { alt?: string };
 
@@ -114,6 +122,12 @@ export default async function BlogPostPage({
     postId: post._id,
   });
 
+  const morePosts = await client.fetch<MorePost[]>(MORE_POSTS_QUERY, {
+    siteId,
+    slug,
+    limit: MORE_POSTS_LIMIT,
+  });
+
   const articleJsonLd = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -191,6 +205,27 @@ export default async function BlogPostPage({
 
         <CommentForm postId={post._id} slug={slug} />
       </section>
+
+      {morePosts.length > 0 && (
+        <section className="mt-10 border-t border-white/10 pt-8">
+          <h2 className="text-xl font-semibold text-white">
+            More from the blog
+          </h2>
+          <ul className="mt-4 columns-1 gap-x-8 sm:columns-2">
+            {morePosts.map((morePost) => (
+              <li key={morePost.slug} className="break-inside-avoid py-1.5">
+                <Link
+                  href={`/blog/${morePost.slug}`}
+                  prefetch={false}
+                  className="text-gray-300 underline underline-offset-2 hover:text-indigo-400"
+                >
+                  {morePost.title}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </article>
   );
 }
