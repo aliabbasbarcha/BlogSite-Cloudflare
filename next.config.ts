@@ -4,6 +4,21 @@ const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "X-Frame-Options", value: "DENY" },
+  // Only take effect once the browser has seen at least one HTTPS response,
+  // but Cloudflare serves everything over HTTPS already, so this is safe
+  // from day one. `preload` needs a manual submission to hstspreload.org —
+  // harmless to leave in the header even before you do that.
+  {
+    key: "Strict-Transport-Security",
+    value: "max-age=31536000; includeSubDomains; preload",
+  },
+  // Nothing on this site uses camera/mic/geolocation/payment APIs, so deny
+  // them outright rather than leaving the browser default (which varies).
+  {
+    key: "Permissions-Policy",
+    value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+  },
+  { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
   {
     key: "Content-Security-Policy",
     value: [
@@ -26,6 +41,8 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Drops the "X-Powered-By: Next.js" response header (stack fingerprinting).
+  poweredByHeader: false,
   images: {
     remotePatterns: [
       {
