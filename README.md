@@ -18,7 +18,7 @@ This codebase is designed to be deployed multiple times (one deployment per doma
 - A "More from the blog" internal-linking box (post titles only, no images) under every post's comments
 - Loading skeletons and an error boundary for the post and blog-index routes
 - Security headers (`Content-Security-Policy`, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`) applied to every route
-- Site-wide rate limiting on Cloudflare (per-IP, via [`src/proxy.ts`](src/proxy.ts)) to blunt scraping and abuse
+- Site-wide rate limiting on Cloudflare (per-IP, via [`src/middleware.ts`](src/middleware.ts)) to blunt scraping and abuse
 - Custom SVG favicon and logo
 - [Vercel Speed Insights](https://vercel.com/docs/speed-insights)
 - Link prefetching is disabled site-wide to conserve request usage on free hosting plans
@@ -145,7 +145,7 @@ src/sanity/
   schemaTypes/                Content model (post, author, category, comment, site)
   lib/                        Sanity clients (read + write) and GROQ queries
 src/lib/site.ts                Site name/description/URL/site-ID/Studio-URL constants, jsonLd() helper
-src/proxy.ts                    Per-IP rate limiting (see Cloudflare Workers deployment below)
+src/middleware.ts               Per-IP rate limiting (see Cloudflare Workers deployment below)
 next.config.ts                 Security headers (CSP etc.) and Sanity image remote pattern
 wrangler.jsonc                  Cloudflare Worker config (name, compatibility flags, assets, rate limiter)
 open-next.config.ts             OpenNext Cloudflare adapter build config
@@ -166,7 +166,7 @@ Deploys via the [OpenNext Cloudflare adapter](https://opennext.js.org/cloudflare
 5. `npm run deploy` — runs `opennextjs-cloudflare build` then `opennextjs-cloudflare deploy`. Use `npm run preview` to build and run it locally against Workers runtime first.
 6. Worker config lives in [`wrangler.jsonc`](wrangler.jsonc) (name, compatibility flags, assets binding) and [`open-next.config.ts`](open-next.config.ts) (OpenNext build options).
 
-**Rate limiting**: [`src/proxy.ts`](src/proxy.ts) blocks an IP for the rest of the window once it exceeds 60 requests/60s, using the `RATE_LIMITER` binding declared in `wrangler.jsonc`'s `unsafe.bindings` (Rate Limiting bindings are a Workers platform feature, free on every plan — not the same thing as the dashboard's WAF rate limiting rules, which are paid). Static assets never hit the Worker (served straight from the `ASSETS` binding), so this only counts page/API requests. Adjust the `limit`/`period` in `wrangler.jsonc` if it's too strict or too loose for your traffic. This binding only works when deployed or run through `wrangler dev`/`npm run preview` — plain `next dev` has no `RATE_LIMITER`, so the middleware just skips the check locally.
+**Rate limiting**: [`src/middleware.ts`](src/middleware.ts) blocks an IP for the rest of the window once it exceeds 60 requests/60s, using the `RATE_LIMITER` binding declared in `wrangler.jsonc`'s `unsafe.bindings` (Rate Limiting bindings are a Workers platform feature, free on every plan — not the same thing as the dashboard's WAF rate limiting rules, which are paid). Static assets never hit the Worker (served straight from the `ASSETS` binding), so this only counts page/API requests. Adjust the `limit`/`period` in `wrangler.jsonc` if it's too strict or too loose for your traffic. This binding only works when deployed or run through `wrangler dev`/`npm run preview` — plain `next dev` has no `RATE_LIMITER`, so the middleware just skips the check locally.
 
 ### Vercel or Netlify
 

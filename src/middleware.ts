@@ -12,7 +12,7 @@ type RateLimiterBinding = {
   limit: (options: { key: string }) => Promise<{ success: boolean }>;
 };
 
-export default async function proxy(request: NextRequest) {
+export default async function middleware(request: NextRequest) {
   const { env } = getCloudflareContext();
   const rateLimiter = (env as unknown as { RATE_LIMITER?: RateLimiterBinding })
     .RATE_LIMITER;
