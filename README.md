@@ -14,9 +14,11 @@ This codebase is designed to be deployed multiple times (one deployment per doma
 - Per-post SEO fields (meta title/description) with sensible fallbacks, self-referencing canonical URLs on every page, JSON-LD structured data (`WebSite` + `BlogPosting`), `sitemap.xml`, `robots.txt`, and `llms.txt`
 - Social share buttons (X, LinkedIn, Facebook, WhatsApp, copy-link) on every post
 - A no-login comment system on each post (name + comment, no account required)
-- On-demand revalidation via a Sanity webhook — edits in the Studio update the live site within seconds, with a 1-week time-based fallback
+- On-demand revalidation, per deployment either via a Sanity webhook (edits update the live site within seconds) or time-based only (see [On-demand revalidation](#on-demand-revalidation))
+- A "More from the blog" internal-linking box (post titles only, no images) under every post's comments
 - Loading skeletons and an error boundary for the post and blog-index routes
 - Security headers (`Content-Security-Policy`, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`) applied to every route
+- Site-wide rate limiting on Cloudflare (per-IP, via [`src/middleware.ts`](src/middleware.ts)) to blunt scraping and abuse
 - Custom SVG favicon and logo
 - [Vercel Speed Insights](https://vercel.com/docs/speed-insights)
 - Link prefetching is disabled site-wide to conserve request usage on free hosting plans
@@ -162,6 +164,8 @@ Deploys via the [OpenNext Cloudflare adapter](https://opennext.js.org/cloudflare
 4. Decide per deployment whether it gets a [webhook or relies on time-based revalidation](#on-demand-revalidation) — free-tier Sanity projects only get 2 webhook slots.
 5. `npm run deploy` — runs `opennextjs-cloudflare build` then `opennextjs-cloudflare deploy`. Use `npm run preview` to build and run it locally against Workers runtime first.
 6. Worker config lives in [`wrangler.jsonc`](wrangler.jsonc) (name, compatibility flags, assets binding) and [`open-next.config.ts`](open-next.config.ts) (OpenNext build options).
+
+**Rate limiting**: [`src/middleware.ts`](src/middleware.ts) blocks an IP for the rest of the window once it exceeds 60 requests/60s, using the `RATE_LIMITER` binding declared in `wrangler.jsonc`'s `unsafe.bindings` (Rate Limiting bindings are a Workers platform feature, free on every plan — not the same thing as the dashboard's WAF rate limiting rules, which are paid). Static assets never hit the Worker (served straight from the `ASSETS` binding), so this only counts page/API requests. Adjust the `limit`/`period` in `wrangler.jsonc` if it's too strict or too loose for your traffic. This binding only works when deployed or run through `wrangler dev`/`npm run preview` — plain `next dev` has no `RATE_LIMITER`, so the middleware just skips the check locally.
 
 ### Vercel or Netlify
 

@@ -10,5 +10,18 @@
   },
   "observability": {
     "enabled": true
+  },
+  // Site-wide scraping/abuse guard: blocks an IP once it exceeds the limit,
+  // for the rest of the period. Free on all Workers plans (Rate Limiting
+  // bindings are a platform feature, not gated behind a paid plan).
+  "unsafe": {
+    "bindings": [
+      {
+        "name": "RATE_LIMITER",
+        "type": "ratelimit",
+        "namespace_id": "1001",
+        "simple": { "limit": 60, "period": 60 }
+      }
+    ]
   }
 }
