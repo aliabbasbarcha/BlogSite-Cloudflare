@@ -12,11 +12,11 @@ const securityHeaders = [
       // bootstrap injects inline <script> tags with no nonce; without this,
       // the browser blocks them and pages get stuck showing loading.tsx
       // forever since the Suspense fallback never gets swapped for content.
-      "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com",
+      "script-src 'self' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: https://cdn.sanity.io",
       "font-src 'self'",
-      "connect-src 'self' https://va.vercel-scripts.com",
+      "connect-src 'self'",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",

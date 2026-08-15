@@ -20,7 +20,6 @@ This codebase is designed to be deployed multiple times (one deployment per doma
 - Security headers (`Content-Security-Policy`, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`) applied to every route
 - Site-wide rate limiting on Cloudflare (per-IP, via [`src/middleware.ts`](src/middleware.ts)) to blunt scraping and abuse
 - Custom SVG favicon and logo
-- [Vercel Speed Insights](https://vercel.com/docs/speed-insights)
 - Link prefetching is disabled site-wide to conserve request usage on free hosting plans
 
 ## Requirements
@@ -175,8 +174,7 @@ Also deploys cleanly to [Vercel](https://vercel.com/new) or [Netlify](https://ne
 1. Set the same environment variables from `.env.local` in the project settings, with `NEXT_PUBLIC_SITE_URL` set to your production domain and `NEXT_PUBLIC_SITE_ID` set per deployment (see [Multi-site setup](#multi-site-setup)).
 2. In your Sanity project's API settings, add your production URL to **CORS origins**.
 3. Decide per deployment whether it gets a [webhook or relies on time-based revalidation](#on-demand-revalidation) — free-tier Sanity projects only get 2 webhook slots.
-4. On Vercel: enable **Speed Insights** for the project in the dashboard (Speed Insights tab) to start collecting data.
-5. On Netlify: the Next.js build can fail with "Secrets scanning found secrets in build" because `NEXT_PUBLIC_*` values are (correctly) inlined into the client bundle, and Netlify's scanner flags that by default. Fix by adding an env var listing every configured key:
+4. On Netlify: the Next.js build can fail with "Secrets scanning found secrets in build" because `NEXT_PUBLIC_*` values are (correctly) inlined into the client bundle, and Netlify's scanner flags that by default. Fix by adding an env var listing every configured key:
    ```
    SECRETS_SCAN_OMIT_KEYS=NEXT_PUBLIC_SANITY_PROJECT_ID,NEXT_PUBLIC_SANITY_DATASET,NEXT_PUBLIC_SANITY_API_VERSION,NEXT_PUBLIC_SITE_ID,NEXT_PUBLIC_SITE_URL,NEXT_PUBLIC_STUDIO_URL,NEXT_PUBLIC_SITE_DESCRIPTION,SANITY_API_READ_TOKEN,SANITY_REVALIDATE_SECRET
    ```
